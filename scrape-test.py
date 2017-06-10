@@ -64,7 +64,3 @@ def scrape_sale(sale):
         "INSERT INTO items(location, id, description, info) \
         VALUES(?,?,?,?)", args)
     conn.commit()
-
-
-sale = "schoolii1969"
-scrape_sale(sale)
