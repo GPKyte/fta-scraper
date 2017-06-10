@@ -16,7 +16,7 @@ link='http://bidfta.com'
 page=urllib2.urlopen(link)
 soup=BeautifulSoup(page, 'lxml')
 day=datetime.date.today().day
-locations=("amazon","cleveland")
+locations=["columbus","cleveland"]
 
 auctions=soup.findAll('div', { 'class' : 'medium-4 columns auction' })
 for a in auctions:
@@ -26,10 +26,9 @@ for a in auctions:
         continue
 
     location=a.find('p', class_="auctionLocation").find(text=True).lower()
-    if not 'found' in ['found' if (loc in location) else '' for loc in locations]:
+    if not 'found' in ['found' if (loc in location) else None for loc in locations]:
         continue
 
     link=a.find('a').get('href')
     link=string.replace(link, "mndetails", "mnprint")
     print("{} | {} | {}".format(timeout, location, link))
-

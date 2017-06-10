@@ -2,6 +2,7 @@ import urllib2
 from bs4 import BeautifulSoup
 import pandas as pd
 import sqlite3
+from byteify import byteify
 
 def scrape_sale(sale):
     link = "https://bid.bidfta.com/cgi-bin/mnprint.cgi?{}".format(sale)
@@ -14,10 +15,18 @@ def scrape_sale(sale):
     cursor = conn.cursor()
     cursor.execute("CREATE TABLE IF NOT EXISTS items (\
         location text, \
-        id text, \
-        description text, \
+        timeout text, \
+        sale text, \
+        itemId text, \
+        link text, \
         info text, \
-        UNIQUE(id) ON CONFLICT REPLACE)")
+        description text, \
+        UNIQUE(itemId) ON CONFLICT REPLACE)")
+    
+    timeout = "June 10, 2017 2:15 PM EST"
+    header = soup.find('div', id='wrapper').find('p', align='center')
+    title = header.findAll(text=True)[1]
+    timeout = byteify(title.split(' - ')[-1])
 
     args = []
     for row in catalog.findAll("tr")[1:]:
@@ -27,26 +36,24 @@ def scrape_sale(sale):
         info = None
         location = None
 
-        #itemLink = "https://bid.bidfta.com/cgi-bin/mnlist.cgi?{}/{}" \
-        #    .format(sale, itemCode)
+        link = "https://bid.bidfta.com/cgi-bin/mnlist.cgi?{}/{}" \
+            .format(sale, itemId)
 
 
-        print(itemId)
         details = cells[1].findAll('b')
         for elem in details:
             tag = elem.find(text=True)
-            content = elem.next_sibling
+            content = elem.next_sibling.strip()
             if (not content):
                 continue
             if (content[0] == ":"):
                 content = content[2:]
-            print("    {}: {}".format(tag, content))
 
-            if (tag == "Item Description"):
+            if ("Description" in tag):
                 description = content
-            elif (tag == "Additional Info"):
+            elif ("Additional Info" in tag):
                 info = content
-            elif (tag == "Item Location"):
+            elif ("Item Location" in tag):
                 location = content
             else:
                 pass
@@ -56,11 +63,15 @@ def scrape_sale(sale):
 
         args.append((
             location,
+            timeout,
+            sale,
             itemId,
-            description,
-            info))
+            link,
+            info,
+            description))
 
     cursor.executemany(
-        "INSERT INTO items(location, id, description, info) \
-        VALUES(?,?,?,?)", args)
+        "INSERT INTO items(location, timeout, sale, itemId, \
+                link, info, description) \
+        VALUES(?,?,?,?,?,?,?)", args)
     conn.commit()
