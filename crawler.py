@@ -8,27 +8,30 @@
 #
 
 import urllib2
-from bs4 import BeautifulSoup
 import datetime
 import string
 
-link='http://bidfta.com'
-page=urllib2.urlopen(link)
-soup=BeautifulSoup(page, 'lxml')
-day=datetime.date.today().day
-locations=["columbus","cleveland"]
+from scrape_sale import scrape_sale
+from bs4 import BeautifulSoup
 
-auctions=soup.findAll('div', { 'class' : 'medium-4 columns auction' })
-for a in auctions:
-    timeout=a.find('time').get('datetime')
-    timeout=timeout[5:16]
-    if int(timeout[3:5]) < day:
-        continue
+def crawl(locations):
+    link='http://bidfta.com'
+    page=urllib2.urlopen(link)
+    soup=BeautifulSoup(page, 'lxml')
+    day=datetime.date.today().day
 
-    location=a.find('p', class_="auctionLocation").find(text=True).lower()
-    if not 'found' in ['found' if (loc in location) else None for loc in locations]:
-        continue
+    auctions=soup.findAll('div', { 'class' : 'medium-4 columns auction' })
+    for a in auctions:
+        timeout=a.find('time').get('datetime')
+        timeout=timeout[5:16]
+        if int(timeout[3:5]) < day:
+            continue
 
-    link=a.find('a').get('href')
-    link=string.replace(link, "mndetails", "mnprint")
-    print("{} | {} | {}".format(timeout, location, link))
+        location=a.find('p', class_="auctionLocation").find(text=True).lower()
+        if not 'found' in ['found' if (loc in location) else None for loc in locations]:
+            continue
+
+        link=a.find('a').get('href')
+        link=string.replace(link, "mndetails", "mnprint")
+        print("{} | {} | {}".format(timeout, location, link))
+        scrape_sale(link)

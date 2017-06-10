@@ -1,12 +1,12 @@
 import urllib2
-from bs4 import BeautifulSoup
-import pandas as pd
 import sqlite3
+import string
+
+from bs4 import BeautifulSoup
 from byteify import byteify
 
 def scrape_sale(sale):
-    link = "https://bid.bidfta.com/cgi-bin/mnprint.cgi?{}".format(sale)
-    page = urllib2.urlopen(link)
+    page = urllib2.urlopen(sale)
     soup = BeautifulSoup(page, 'lxml')
 
     catalog = soup.find('table', { 'id': 'DataTable' })
@@ -36,8 +36,8 @@ def scrape_sale(sale):
         info = None
         location = None
 
-        link = "https://bid.bidfta.com/cgi-bin/mnlist.cgi?{}/{}" \
-            .format(sale, itemId)
+        itemPage = string.replace(sale, "mnprint", "mnlist")
+        link = "{}/{}".format(itemPage, itemId)
 
 
         details = cells[1].findAll('b')

@@ -1,4 +1,4 @@
-from scrape_sale import scrape_sale
+from crawler import crawl
 
-sale = 'phillipi1079'
-scrape_sale(sale)
+locations=['columbus', 'cleveland']
+crawl(locations)
