@@ -1,4 +1,4 @@
 from crawler import crawl
 
-locations=['columbus', 'cleveland']
+locations=['cincinnati', 'cleveland', 'columbus']
 crawl(locations)
